@@ -4,6 +4,7 @@ from django.db.models import Q
 from .models import Product, ProductVariant
 from cart.models import Cart, CartItem, Wishlist
 from cart.views import get_cart
+import json
 
 
 def home(request):
@@ -63,9 +64,19 @@ def product_detail(request, id):
     product = get_object_or_404(Product, id=id)
     variants = product.variants.all()
     
-    # Get unique sizes and colors
-    sizes = variants.values_list('size', flat=True).distinct()
-    colors = variants.values_list('color', flat=True).distinct()
+    # Get unique sizes and colors, excluding empty strings
+    sizes = [s for s in variants.values_list('size', flat=True).distinct() if s]
+    colors = [c for c in variants.values_list('color', flat=True).distinct() if c]
+    
+    # Serialize variants to JSON list of dicts for Javascript usage
+    variants_data = json.dumps([
+        {
+            'id': v.id,
+            'size': v.size,
+            'color': v.color,
+            'stock': v.stock
+        } for v in variants
+    ])
     
     # Get related products (same category)
     related_products = Product.objects.filter(category=product.category).exclude(id=product.id)[:4]
@@ -85,6 +96,7 @@ def product_detail(request, id):
     context = {
         'product': product,
         'variants': variants,
+        'variants_data': variants_data,
         'sizes': sizes,
         'colors': colors,
         'related_products': related_products,

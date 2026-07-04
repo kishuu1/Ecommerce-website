@@ -290,13 +290,59 @@
     }
 
     function updateSelectedVariant() {
-        const variants = {{ variants|safe }};
+        const variants = {{ variants_data|safe }};
         const variantInput = document.getElementById('selectedVariant');
+        const addToCartBtn = document.querySelector('#addToCartForm button[type="submit"]');
+        
+        const needsSize = {% if sizes %}true{% else %}false{% endif %};
+        const needsColor = {% if colors %}true{% else %}false{% endif %};
+        
+        let foundVariant = null;
+        
+        if (variants.length === 0) {
+            addToCartBtn.removeAttribute('disabled');
+            return;
+        }
+        
+        if ((needsSize && !selectedSize) || (needsColor && !selectedColor)) {
+            variantInput.value = "";
+            addToCartBtn.setAttribute('disabled', 'true');
+            return;
+        }
         
         for (let variant of variants) {
-            if (variant.size === selectedSize && variant.color === selectedColor) {
-                variantInput.value = variant.id;
+            const sizeMatch = !needsSize || variant.size === selectedSize;
+            const colorMatch = !needsColor || variant.color === selectedColor;
+            
+            if (sizeMatch && colorMatch) {
+                foundVariant = variant;
                 break;
+            }
+        }
+        
+        if (foundVariant && foundVariant.stock > 0) {
+            variantInput.value = foundVariant.id;
+            addToCartBtn.removeAttribute('disabled');
+            
+            const qtyInput = document.getElementById('quantityInput');
+            if (qtyInput) {
+                qtyInput.max = foundVariant.stock;
+            }
+            
+            const stockBadge = document.querySelector('.stock-badge');
+            if (stockBadge) {
+                stockBadge.className = "badge bg-success stock-badge";
+                stockBadge.innerHTML = `<i class="fas fa-check-circle me-1"></i>In Stock (${foundVariant.stock})`;
+            }
+        } else {
+            variantInput.value = "";
+            addToCartBtn.setAttribute('disabled', 'true');
+            if (foundVariant && foundVariant.stock === 0) {
+                const stockBadge = document.querySelector('.stock-badge');
+                if (stockBadge) {
+                    stockBadge.className = "badge bg-danger stock-badge";
+                    stockBadge.innerHTML = `<i class="fas fa-times-circle me-1"></i>Out of Stock`;
+                }
             }
         }
     }

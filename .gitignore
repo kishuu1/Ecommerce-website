@@ -12,7 +12,7 @@ venv/
 *.pot
 *.pyc
 db.sqlite3
-# /media/  (removed so images show up in production)
+/media/
 /staticfiles/
 .env
 .env.*

@@ -106,7 +106,7 @@ def create_order(request):
                 pass
 
             messages.success(request, f"Order placed successfully! Order ID: {order.order_id}")
-            return redirect('order_detail', order_id=order.order_id)
+            return redirect(f'/orders/detail/{order.order_id}/?new_order=true')
         
         elif payment_method == 'razorpay':
             # Redirect to payment page (use numeric PK for payment URL)
@@ -167,9 +167,9 @@ def download_invoice(request, order_id):
     content = []
 
     # Company Header
-    content.append(Paragraph("Pari kart - Invoice", title_style))
+    content.append(Paragraph("DripShop - Invoice", title_style))
     content.append(Paragraph("123 E-Commerce Street, Online City, India", subtitle_style))
-    content.append(Paragraph("Phone: +91 9876543210 | Email: support@parikart.com", subtitle_style))
+    content.append(Paragraph("Phone: +91 9876543210 | Email: support@dripshop.com", subtitle_style))
     content.append(Spacer(1, 20))
 
     # Invoice Details

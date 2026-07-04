@@ -1,57 +1,492 @@
 {% extends 'base.html' %}
-{% block title %}Razorpay Payment - DripShop{% endblock %}
+{% block title %}Secure Checkout - DripShop{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Gradient backgrounds and modern variables */
+    :root {
+        --checkout-primary: #0d6efd;
+        --checkout-primary-hover: #0b5ed7;
+        --checkout-success: #198754;
+        --bg-glass: rgba(255, 255, 255, 0.85);
+        --border-glass: rgba(255, 255, 255, 0.25);
+    }
+
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+        min-height: 100vh;
+    }
+
+    /* Checkout Progress Steps */
+    .steps-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 600px;
+        margin: 0 auto 40px;
+        position: relative;
+    }
+    .steps-line {
+        position: absolute;
+        top: 25px;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: #dee2e6;
+        z-index: 1;
+    }
+    .steps-line-progress {
+        position: absolute;
+        top: 25px;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(to right, var(--checkout-success), var(--checkout-primary));
+        z-index: 2;
+        transition: width 0.5s ease;
+    }
+    .step-item {
+        position: relative;
+        z-index: 3;
+        text-align: center;
+        flex: 1;
+    }
+    .step-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #fff;
+        border: 3px solid #dee2e6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 10px;
+        font-weight: 600;
+        color: #6c757d;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .step-item.active .step-icon {
+        border-color: var(--checkout-primary);
+        color: var(--checkout-primary);
+        background: #e6f0ff;
+        transform: scale(1.1);
+        box-shadow: 0 0 15px rgba(13, 110, 253, 0.2);
+    }
+    .step-item.completed .step-icon {
+        border-color: var(--checkout-success);
+        background: #d1e7dd;
+        color: var(--checkout-success);
+    }
+    .step-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #495057;
+    }
+
+    /* Checkout Card styling */
+    .checkout-card {
+        background: var(--bg-glass);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--border-glass);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+    }
+    .checkout-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+    }
+    .card-header-gradient {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        color: white;
+        border: none;
+        padding: 20px;
+    }
+
+    /* Interactive mock card display */
+    .credit-card-mock {
+        width: 100%;
+        height: 180px;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        border-radius: 12px;
+        padding: 20px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+        margin-bottom: 25px;
+    }
+    .credit-card-mock::before {
+        content: '';
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.05);
+        top: -150px;
+        right: -100px;
+    }
+    .card-chip {
+        width: 40px;
+        height: 30px;
+        background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+    .card-number-placeholder {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 1.25rem;
+        letter-spacing: 2px;
+        margin-bottom: 15px;
+    }
+    .card-holder-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+    }
+
+    /* Pulse effect for Secure connection */
+    .secure-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #e2e8f0;
+        color: #475569;
+        padding: 6px 12px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .secure-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--checkout-success);
+        position: relative;
+    }
+    .secure-dot::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 50%;
+        background: var(--checkout-success);
+        animation: pulse-dot 1.5s infinite;
+    }
+    @keyframes pulse-dot {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(3); opacity: 0; }
+    }
+
+    /* Pay button styling */
+    .pay-btn-creative {
+        position: relative;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        border: none;
+        color: white;
+        padding: 16px 32px;
+        font-size: 1.15rem;
+        font-weight: 600;
+        border-radius: 12px;
+        width: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        overflow: hidden;
+    }
+    .pay-btn-creative:hover {
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    }
+    .pay-btn-creative:active {
+        transform: translateY(0);
+    }
+    .pay-btn-creative .btn-glow {
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to right, transparent, rgba(255,255,255,0.25), transparent);
+        transition: 0.5s;
+    }
+    .pay-btn-creative:hover .btn-glow {
+        left: 100%;
+        transition: 0.75s;
+    }
+
+    /* Success Overlay Modal */
+    #success-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .success-modal-content {
+        background: white;
+        width: 100%;
+        max-width: 500px;
+        border-radius: 24px;
+        padding: 40px 30px;
+        text-align: center;
+        position: relative;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        transform: scale(0.7);
+        opacity: 0;
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    #success-modal-overlay.show .success-modal-content {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    #confetti-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9998;
+    }
+
+    /* Animated Big Blue Tick SVG */
+    .checkmark {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        display: block;
+        stroke-width: 4;
+        stroke: var(--checkout-primary);
+        stroke-miterlimit: 10;
+        box-shadow: inset 0px 0px 0px var(--checkout-primary);
+        animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+        margin: 0 auto 30px;
+    }
+    .checkmark__circle {
+        stroke-dasharray: 166;
+        stroke-dashoffset: 166;
+        stroke-width: 4;
+        stroke-miterlimit: 10;
+        stroke: var(--checkout-primary);
+        fill: none;
+        animation: stroke .6s cubic-bezier(0.650, 0.000, 0.450, 1.000) forwards;
+    }
+    .checkmark__check {
+        transform-origin: 50% 50%;
+        stroke-dasharray: 48;
+        stroke-dashoffset: 48;
+        animation: stroke .3s cubic-bezier(0.650, 0.000, 0.450, 1.000) .8s forwards;
+    }
+    @keyframes stroke {
+        100% { stroke-dashoffset: 0; }
+    }
+    @keyframes fill {
+        100% { box-shadow: inset 0px 0px 0px 60px #e6f0ff; }
+    }
+    @keyframes scale {
+        0%, 100% { transform: none; }
+        50% { transform: scale3d(1.1, 1.1, 1); }
+    }
+
+    /* Processing Overlay */
+    .processing-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        z-index: 10;
+        animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="text-center py-5">
-    <h3>Proceeding to Razorpay Payment</h3>
-    <p class="text-muted">Order: {{ order.order_id }} — Amount: ₹{{ order.total_price }}</p>
-    <button id="rzp-button" class="btn btn-primary btn-lg">Pay Now</button>
+<div class="container py-5">
+    <!-- Steps Indicator -->
+    <div class="steps-container">
+        <div class="steps-line"></div>
+        <div class="steps-line-progress"></div>
+        
+        <div class="step-item completed">
+            <div class="step-icon"><i class="fas fa-shopping-cart"></i></div>
+            <div class="step-label">Cart</div>
+        </div>
+        <div class="step-item completed">
+            <div class="step-icon"><i class="fas fa-file-invoice"></i></div>
+            <div class="step-label">Billing</div>
+        </div>
+        <div class="step-item active" id="step-payment">
+            <div class="step-icon"><i class="fas fa-credit-card"></i></div>
+            <div class="step-label">Payment</div>
+        </div>
+    </div>
+
+    <!-- Main Payment Section -->
+    <div class="row justify-content-center">
+        <div class="col-lg-6 mb-4">
+            <div class="card checkout-card position-relative">
+                <!-- Processing Loader Overlay -->
+                <div class="processing-overlay" id="loading-overlay">
+                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                    <h5 class="text-dark">Connecting Secure Portal</h5>
+                    <p class="text-muted small">Please do not refresh or close the page...</p>
+                </div>
+
+                <div class="card-header card-header-gradient d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-lock me-2 text-primary"></i>Secure Checkout</h5>
+                    <div class="secure-badge">
+                        <div class="secure-dot"></div>
+                        <span>SECURE 256-BIT</span>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Billing Mock Card -->
+                    <div class="credit-card-mock">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="card-chip"></div>
+                            <i class="fab fa-cc-visa fa-2x text-white"></i>
+                        </div>
+                        <div class="card-number-placeholder">••••  ••••  ••••  {{ order.order_id|slice:"-4:" }}</div>
+                        <div class="card-holder-info">
+                            <div>
+                                <small class="text-white-50 d-block">Order Receipt</small>
+                                <strong>{{ order.order_id }}</strong>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-white-50 d-block">Amount Due</small>
+                                <strong>₹{{ order.total_price }}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Provider Info -->
+                    <div class="bg-light p-3 rounded-3 mb-4 d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="https://razorpay.com/assets/razorpay-glyph.svg" alt="Razorpay Logo" width="30">
+                            <div>
+                                <h6 class="mb-0 font-weight-bold">Razorpay Gateway</h6>
+                                <small class="text-muted">UPI, Cards, Netbanking, Wallets</small>
+                            </div>
+                        </div>
+                        <span class="badge bg-primary">Fast Pay</span>
+                    </div>
+
+                    <!-- Order Item Listing -->
+                    <div class="mb-4">
+                        <h6 class="font-weight-bold mb-3">Order Details</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0 py-2">
+                                <span class="text-muted">Customer Name</span>
+                                <strong class="text-dark">{{ request.user.get_full_name|default:request.user.username }}</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0 py-2">
+                                <span class="text-muted">Delivery Address</span>
+                                <strong class="text-dark text-truncate" style="max-width: 250px;" title="{{ order.shipping_address }}">{{ order.shipping_address }}</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0 py-2">
+                                <span class="text-muted">Phone Number</span>
+                                <strong class="text-dark">{{ order.phone }}</strong>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Pay Button Action -->
+                    <button id="rzp-creative-button" class="pay-btn-creative">
+                        <span class="btn-glow"></span>
+                        <i class="fas fa-shield-alt me-2"></i>Pay Securely ₹{{ order.total_price }}
+                    </button>
+
+                    <div class="text-center mt-3 text-muted small">
+                        <i class="fas fa-lock me-1"></i> Your transaction is secured by end-to-end encryption.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Creative Full-screen Success Modal Overlay -->
+<div id="success-modal-overlay">
+    <canvas id="confetti-canvas"></canvas>
+    <div class="success-modal-content">
+        <!-- Big Blue Tick SVG Animation -->
+        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+            <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        </svg>
+
+        <h2 class="text-dark font-weight-bold mb-2">Thank you for shopping!</h2>
+        <p class="text-muted px-3">Your payment was completed successfully. Your order is now being processed.</p>
+        
+        <div class="bg-light p-3 rounded-4 my-4 d-inline-block w-100 text-start">
+            <div class="row">
+                <div class="col-6 mb-2">
+                    <small class="text-muted d-block">Order ID</small>
+                    <strong class="text-dark">{{ order.order_id }}</strong>
+                </div>
+                <div class="col-6 mb-2">
+                    <small class="text-muted d-block">Amount Paid</small>
+                    <strong class="text-success">₹{{ order.total_price }}</strong>
+                </div>
+                <div class="col-12 border-top pt-2">
+                    <small class="text-muted d-block">Razorpay Payment ID</small>
+                    <strong class="text-dark" id="modal-payment-id">Pay_xxxxxxxxxxxx</strong>
+                </div>
+            </div>
+        </div>
+
+        <button id="modal-proceed-btn" class="btn btn-primary btn-lg w-100 rounded-3">
+            Go to My Orders <i class="fas fa-arrow-right ms-2"></i>
+        </button>
+        <p class="text-muted small mt-3 mb-0">Redirecting automatically in <span id="countdown-timer">5</span> seconds...</p>
+    </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
+    // Config properties for Razorpay checkout integration
     const options = {
-        "key": "{{ razorpay_key }}", // Enter the Key ID generated from the Dashboard
-        "amount": {{ razorpay_order.amount }}, // amount in the smallest currency unit
+        "key": "{{ razorpay_key }}",
+        "amount": {{ razorpay_order.amount }},
         "currency": "INR",
         "name": "DripShop",
-        "description": `Order {{ order.order_id }}`,
-        "order_id": "{{ razorpay_order.id }}", //This is a sample Order ID. Pass the `id` obtained in the response of create order.
-        "handler": function (response){
-            // On successful payment, post details to server-side callback to verify signature
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = "{% url 'razorpay_callback' %}";
-
-            const csrfToken = '{{ csrf_token }}';
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = 'csrfmiddlewaretoken';
-            csrfInput.value = csrfToken;
-            form.appendChild(csrfInput);
-
-            const paymentId = document.createElement('input');
-            paymentId.type = 'hidden';
-            paymentId.name = 'razorpay_payment_id';
-            paymentId.value = response.razorpay_payment_id;
-            form.appendChild(paymentId);
-
-            const orderId = document.createElement('input');
-            orderId.type = 'hidden';
-            orderId.name = 'razorpay_order_id';
-            orderId.value = response.razorpay_order_id;
-            form.appendChild(orderId);
-
-            const signature = document.createElement('input');
-            signature.type = 'hidden';
-            signature.name = 'razorpay_signature';
-            signature.value = response.razorpay_signature;
-            form.appendChild(signature);
-
-            document.body.appendChild(form);
-            form.submit();
+        "description": "Order {{ order.order_id }}",
+        "order_id": "{{ razorpay_order.id }}",
+        "handler": function (response) {
+            // Store payment info & display success celebration popup
+            document.getElementById('modal-payment-id').textContent = response.razorpay_payment_id;
+            showSuccessModal(response);
         },
         "prefill": {
             "email": "{{ request.user.email }}",
@@ -59,13 +494,168 @@
         },
         "theme": {
             "color": "#0d6efd"
+        },
+        "modal": {
+            "ondismiss": function() {
+                // Remove processing spinner if payment is dismissed/cancelled
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
         }
     };
 
-    document.getElementById('rzp-button').addEventListener('click', function(e){
-        const rzp1 = new Razorpay(options);
-        rzp1.open();
+    // Trigger Razorpay Modal
+    document.getElementById('rzp-creative-button').addEventListener('click', function(e) {
+        document.getElementById('loading-overlay').style.display = 'flex';
+        const rzp = new Razorpay(options);
+        rzp.open();
         e.preventDefault();
     });
+
+    // Form submission helper after successful payment callback
+    function submitCallbackForm(response) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = "{% url 'razorpay_callback' %}";
+
+        const csrfToken = '{{ csrf_token }}';
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+
+        const paymentId = document.createElement('input');
+        paymentId.type = 'hidden';
+        paymentId.name = 'razorpay_payment_id';
+        paymentId.value = response.razorpay_payment_id;
+        form.appendChild(paymentId);
+
+        const orderId = document.createElement('input');
+        orderId.type = 'hidden';
+        orderId.name = 'razorpay_order_id';
+        orderId.value = response.razorpay_order_id;
+        form.appendChild(orderId);
+
+        const signature = document.createElement('input');
+        signature.type = 'hidden';
+        signature.name = 'razorpay_signature';
+        signature.value = response.razorpay_signature;
+        form.appendChild(signature);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    // Success Screen Overlay and Celebration Modal Trigger
+    function showSuccessModal(response) {
+        const overlay = document.getElementById('success-modal-overlay');
+        overlay.style.display = 'flex';
+        
+        // Update Step Progress indicator
+        const paymentStep = document.getElementById('step-payment');
+        if (paymentStep) {
+            paymentStep.classList.remove('active');
+            paymentStep.classList.add('completed');
+            document.querySelector('.steps-line-progress').style.width = '100%';
+        }
+        
+        // Hide loader overlay
+        document.getElementById('loading-overlay').style.display = 'none';
+
+        // Trigger CSS animation scale on modal content
+        setTimeout(() => {
+            overlay.classList.add('show');
+            startConfetti();
+        }, 150);
+
+        // Countdown Timer & Auto Redirect
+        let timeLeft = 5;
+        const countdownEl = document.getElementById('countdown-timer');
+        const timer = setInterval(() => {
+            timeLeft--;
+            countdownEl.textContent = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                submitCallbackForm(response);
+            }
+        }, 1000);
+
+        // Direct Submit Button
+        document.getElementById('modal-proceed-btn').addEventListener('click', function() {
+            clearInterval(timer);
+            submitCallbackForm(response);
+        });
+    }
+
+    // HTML5 Canvas Confetti Celebration Animation
+    function startConfetti() {
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Resize canvas to full screen overlay
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const colors = ['#0d6efd', '#20c997', '#ffc107', '#fd7e14', '#dc3545', '#6f42c1'];
+        const particles = [];
+
+        class ConfettiParticle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * -canvas.height - 20;
+                this.size = Math.random() * 8 + 6;
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.speedY = Math.random() * 3 + 4;
+                this.speedX = Math.random() * 4 - 2;
+                this.rotation = Math.random() * 360;
+                this.rotationSpeed = Math.random() * 5 - 2.5;
+            }
+
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                this.rotation += this.rotationSpeed;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate((this.rotation * Math.PI) / 180);
+                ctx.fillStyle = this.color;
+                ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+                ctx.restore();
+            }
+        }
+
+        // Initialize particles
+        for (let i = 0; i < 150; i++) {
+            particles.push(new ConfettiParticle());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            let allFallen = true;
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+                if (p.y < canvas.height) {
+                    allFallen = false;
+                }
+            });
+
+            if (!allFallen) {
+                requestAnimationFrame(animate);
+            }
+        }
+
+        animate();
+
+        // Responsive window scaling
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    }
 </script>
 {% endblock %}
