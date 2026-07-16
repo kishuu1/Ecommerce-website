@@ -8,6 +8,7 @@ from django.core.mail import send_mail
 import razorpay
 import stripe
 from orders.models import Order
+from orders.emails import send_order_confirmation_email
 from cart.models import Cart
 from django.urls import reverse
 import qrcode
@@ -175,19 +176,7 @@ def razorpay_callback(request):
                 user_cart.items.all().delete()
 
             # Send confirmation email
-            try:
-                send_mail(
-                    f'Payment Successful - Order {order.order_id}',
-                    f'Your payment of ₹{order.total_price} has been successful!\n\n'
-                    f'Order ID: {order.order_id}\n'
-                    f'Payment ID: {payment_id}\n\n'
-                    f'Thank you for shopping with us!',
-                    settings.DEFAULT_FROM_EMAIL,
-                    [order.user.email],
-                    fail_silently=True,
-                )
-            except:
-                pass
+            send_order_confirmation_email(order)
 
             messages.success(request, "Payment successful! Order placed successfully.")
             return redirect('order_detail', order_id=order.order_id)
@@ -265,18 +254,7 @@ def stripe_success(request):
                 user_cart.items.all().delete()
             
             # Send confirmation email
-            try:
-                send_mail(
-                    f'Payment Successful - Order {order.order_id}',
-                    f'Your payment of ₹{order.total_price} has been successful!\n\n'
-                    f'Order ID: {order.order_id}\n'
-                    f'Thank you for shopping with us!',
-                    settings.DEFAULT_FROM_EMAIL,
-                    [request.user.email],
-                    fail_silently=True,
-                )
-            except:
-                pass
+            send_order_confirmation_email(order)
             
             messages.success(request, "Payment successful! Order placed successfully.")
             return redirect('order_detail', order_id=order.order_id)

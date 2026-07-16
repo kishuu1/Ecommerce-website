@@ -5,6 +5,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponse
 from .models import Order, OrderItem
+from .emails import send_order_confirmation_email
 from cart.models import Cart
 from products.models import ProductVariant
 import random
@@ -94,16 +95,7 @@ def create_order(request):
             order.save()
             
             # Send confirmation email
-            try:
-                send_mail(
-                    f'Order Confirmation - {order.order_id}',
-                    f'Thank you for your order! Your order ID is {order.order_id}.\n\nTotal: ₹{order.total_price}\n\nPayment Method: Cash on Delivery',
-                    settings.DEFAULT_FROM_EMAIL,
-                    [request.user.email],
-                    fail_silently=True,
-                )
-            except:
-                pass
+            send_order_confirmation_email(order)
 
             messages.success(request, f"Order placed successfully! Order ID: {order.order_id}")
             return redirect(f'/orders/detail/{order.order_id}/?new_order=true')

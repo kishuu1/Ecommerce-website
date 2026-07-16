@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Count
 from .models import Product, ProductVariant
 from cart.models import Cart, CartItem, Wishlist
 from cart.views import get_cart
@@ -36,6 +36,13 @@ def home(request):
     # Get categories for filter dropdown
     categories = Product.objects.values_list('category', flat=True).distinct()
     
+    # Get category counts for Popular Categories sidebar
+    category_counts = (
+        Product.objects.values('category')
+        .annotate(count=Count('id'))
+        .order_by('-count')
+    )
+    
     # Get cart count
     try:
         cart = get_cart(request)
@@ -46,6 +53,7 @@ def home(request):
     context = {
         'products': products,
         'categories': categories,
+        'category_counts': category_counts,
         'search_query': search_query,
         'category_filter': category_filter,
         'sort_by': sort_by,
@@ -92,6 +100,14 @@ def product_detail(request, id):
         cart_count = cart.get_item_count()
     except:
         cart_count = 0
+
+    # Calculate stock status based on variants
+    if variants.exists():
+        total_stock = sum(v.stock for v in variants)
+        is_in_stock = total_stock > 0
+    else:
+        total_stock = 999  # Treat simple products without variants as in stock by default
+        is_in_stock = True
     
     context = {
         'product': product,
@@ -102,6 +118,8 @@ def product_detail(request, id):
         'related_products': related_products,
         'in_wishlist': in_wishlist,
         'cart_count': cart_count,
+        'is_in_stock': is_in_stock,
+        'total_stock': total_stock,
     }
     return render(request, 'product_detail.html', context)
 

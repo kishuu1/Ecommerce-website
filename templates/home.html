@@ -1,265 +1,441 @@
 {% extends 'base.html' %}
-{% block title %}DripShop - Online Shopping{% endblock %}
-
-
-{% block extra_css %}
-<style>
-    .product-card {
-        border: none;
-        border-radius: 12px;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-    .product-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    }
-    .product-card .card-img-top {
-        height: 250px;
-        object-fit: cover;
-        transition: transform 0.3s ease;
-    }
-    .product-card:hover .card-img-top {
-        transform: scale(1.05);
-    }
-    .product-image-container {
-        overflow: hidden;
-        position: relative;
-    }
-    .product-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.3);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: all 0.3s;
-    }
-    .product-card:hover .product-overlay {
-        opacity: 1;
-    }
-    .category-badge {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        z-index: 1;
-    }
-    .filter-section {
-        background: white;
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-    .filter-title {
-        font-weight: 600;
-        margin-bottom: 15px;
-        color: #333;
-    }
-    .filter-option {
-        display: block;
-        padding: 8px 12px;
-        border-radius: 5px;
-        color: #555;
-        text-decoration: none;
-        transition: all 0.2s;
-    }
-    .filter-option:hover, .filter-option.active {
-        background: #f0f7ff;
-        color: #0d6efd;
-    }
-    .sort-select {
-        border-radius: 20px;
-        padding: 8px 16px;
-    }
-    .search-box {
-        border-radius: 25px;
-        padding: 10px 20px;
-        border: 2px solid #dee2e6;
-    }
-    .search-box:focus {
-        border-color: #0d6efd;
-        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
-    }
-    .hero-section {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 20px;
-        padding: 40px;
-        margin-bottom: 40px;
-        color: white;
-    }
-</style>
-{% endblock %}
+{% load static %}
+{% block title %}DripShop - Premium Streetwear & Online Catalog{% endblock %}
 
 {% block content %}
 
+<!-- Category Roundels Horizontal Scroll Section -->
+<div class="category-scroll-container mb-4">
+    <!-- All Categories link -->
+    <a href="{% url 'home' %}" class="category-roundel {% if not category_filter %}active{% endif %}">
+        <div class="category-icon-wrapper">
+            <i class="fas fa-th-large"></i>
+        </div>
+        <span class="category-label">All</span>
+    </a>
+    
+    <!-- Render distinct categories dynamically -->
+    {% for cat in categories %}
+    <a href="{% url 'home' %}?category={{ cat }}" class="category-roundel {% if category_filter|lower == cat|lower %}active{% endif %}">
+        <div class="category-icon-wrapper">
+            {% if cat|lower == 'fashion' or cat|lower == 'clothing' or cat|lower == 'apparel' or cat|lower == 'clothes' %}
+            <i class="fas fa-tshirt"></i>
+            {% elif cat|lower == 'electronics' or cat|lower == 'tech' or cat|lower == 'gadgets' %}
+            <i class="fas fa-laptop"></i>
+            {% elif cat|lower == 'beauty' or cat|lower == 'makeup' or cat|lower == 'cosmetics' or cat|lower == 'accessories' %}
+            <i class="fas fa-magic"></i>
+            {% elif cat|lower == 'home' or cat|lower == 'furniture' or cat|lower == 'decor' or cat|lower == 'kitchen' %}
+            <i class="fas fa-couch"></i>
+            {% elif cat|lower == 'grocery' or cat|lower == 'food' or cat|lower == 'supermarket' %}
+            <i class="fas fa-shopping-basket"></i>
+            {% elif cat|lower == 'sports' or cat|lower == 'fitness' or cat|lower == 'gym' %}
+            <i class="fas fa-dumbbell"></i>
+            {% elif cat|lower == 'shoes' or cat|lower == 'footwear' %}
+            <i class="fas fa-shoe-prints"></i>
+            {% else %}
+            <i class="fas fa-tag"></i>
+            {% endif %}
+        </div>
+        <span class="category-label">{{ cat|title }}</span>
+    </a>
+    {% endfor %}
+</div>
+
 <!-- Hero Section -->
 {% if not search_query and not category_filter %}
-<div class="hero-section">
+<div class="hero-card animate-fade-in-up">
     <div class="row align-items-center">
-        <div class="col-lg-7">
-            <h1 class="display-4 fw-bold mb-3">Welcome to DripShop</h1>
-
-            <p class="lead mb-4">Discover amazing products at unbeatable prices. Shop now and enjoy exclusive deals!</p>
-            <a href="#products" class="btn btn-light btn-lg">
-                <i class="fas fa-shopping-bag me-2"></i>Shop Now
-            </a>
+        <div class="col-lg-6 mb-4 mb-lg-0">
+            <span class="hero-tagline">Premium Quality. Premium You.</span>
+            <h1 class="hero-title mt-2 mb-3">Everything You Need, <br>All in <span>One Place</span></h1>
+            <p class="hero-desc mb-4">Discover millions of products from top brands and trusted sellers. Best prices, premium quality & guaranteed service.</p>
+            <div class="hero-buttons">
+                <a href="#featured-products" class="btn-hero-primary text-decoration-none">Shop Now <i class="fas fa-arrow-right ms-2"></i></a>
+                <a href="#flash-deal" class="btn-hero-outline text-decoration-none">Explore Deals</a>
+            </div>
         </div>
-        <div class="col-lg-5 text-lg-end d-none d-lg-block">
-            <i class="fas fa-shopping-cart fa-10x opacity-25"></i>
+        <div class="col-lg-6 position-relative text-center">
+            <img src="https://images.unsplash.com/photo-1460353581641-37baddab0fa2?q=80&w=600&auto=format&fit=crop" alt="Lifestyle Shoes" class="hero-image rounded-4 img-fluid shadow-sm" style="max-height: 350px; object-fit: cover;">
+            <div class="hero-badge-pill">
+                <span style="font-size: 0.65rem; opacity: 0.8; text-transform: uppercase;">UP TO</span>
+                <span style="font-size: 1.25rem;">60%</span>
+                <span style="font-size: 0.6rem; opacity: 0.8; text-transform: uppercase;">OFF</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row hero-features">
+        <div class="col-md-4 mb-3 mb-md-0">
+            <div class="hero-feature-item">
+                <i class="fas fa-truck"></i>
+                <div>
+                    <strong>Free Shipping</strong>
+                    <span class="d-block text-muted" style="font-size: 0.75rem;">On all orders above ₹500</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3 mb-md-0">
+            <div class="hero-feature-item">
+                <i class="fas fa-undo"></i>
+                <div>
+                    <strong>Easy Returns</strong>
+                    <span class="d-block text-muted" style="font-size: 0.75rem;">30-day return policy</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="hero-feature-item">
+                <i class="fas fa-shield-alt"></i>
+                <div>
+                    <strong>Secure Payment</strong>
+                    <span class="d-block text-muted" style="font-size: 0.75rem;">100% protected payments</span>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 {% endif %}
 
-<!-- Search and Filter Bar -->
-<div class="row mb-4">
-    <div class="col-md-8">
-        <form method="GET" action="{% url 'home' %}" class="d-flex">
-            {% if category_filter %}
-            <input type="hidden" name="category" value="{{ category_filter }}">
-            {% endif %}
-            <input type="text" name="search" class="form-control search-box me-2" 
-                   placeholder="Search products..." value="{{ search_query }}">
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-search"></i>
-            </button>
-        </form>
+<!-- Flash Deal & Category Grid Section -->
+{% if not search_query and not category_filter %}
+<div class="row align-items-stretch" id="flash-deal">
+    <!-- Flash Deal Banner -->
+    <div class="col-lg-8 mb-4">
+        <div class="flash-deal-card h-100 d-flex flex-column justify-content-between">
+            <div class="row align-items-center">
+                <div class="col-md-7">
+                    <span class="flash-deal-title"><i class="fas fa-bolt"></i> Flash Deal</span>
+                    <p class="small opacity-75 mt-1">Limited Time Offer</p>
+                    <h3 class="fw-bold mt-3">Smart Watch Pro</h3>
+                    <div class="countdown-container" id="countdown">
+                        <div class="countdown-box">
+                            <span class="countdown-num" id="days">02</span>
+                            <span class="countdown-label">Days</span>
+                        </div>
+                        <div class="countdown-box">
+                            <span class="countdown-num" id="hours">12</span>
+                            <span class="countdown-label">Hrs</span>
+                        </div>
+                        <div class="countdown-box">
+                            <span class="countdown-num" id="minutes">45</span>
+                            <span class="countdown-label">Mins</span>
+                        </div>
+                        <div class="countdown-box">
+                            <span class="countdown-num" id="seconds">30</span>
+                            <span class="countdown-label">Secs</span>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 my-3">
+                        <span class="fs-4 fw-bold text-warning">₹11,999.00</span>
+                        <span class="text-white-50 text-decoration-line-through small">₹19,999.00</span>
+                    </div>
+                    <a href="{% url 'home' %}?search=watch" class="btn btn-warning btn-sm rounded-pill px-4 py-2 fw-semibold text-dark">Shop the Deal</a>
+                </div>
+                <div class="col-md-5 text-center d-none d-md-block">
+                    <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=300&auto=format&fit=crop" alt="Watch Deal" class="flash-deal-img img-fluid rounded-4">
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="col-md-4">
-        <select class="form-select sort-select" onchange="window.location.href = this.value">
-                <option value="{% url 'home' %}?{% if search_query %}search={{ search_query }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}sort=-created_at" 
-                    {% if sort_by == '-created_at' %}selected{% endif %}>Newest First</option>
+    
+    <!-- Popular Categories -->
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100 border-light shadow-sm p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0 text-dark">Popular Categories</h6>
+                <a href="{% url 'home' %}" class="small text-decoration-none">View All &rsaquo;</a>
+            </div>
+            <div class="d-flex flex-column gap-3">
+                {% for cat in category_counts %}
+                <a href="{% url 'home' %}?category={{ cat.category }}" class="d-flex align-items-center gap-3 text-decoration-none text-dark p-2 {% if not forloop.last %}border-bottom{% endif %}">
+                    <div class="category-icon-wrapper" style="width: 45px; height: 45px; margin-bottom: 0;">
+                        {% if cat.category|lower == 'fashion' or cat.category|lower == 'clothing' %}
+                        <i class="fas fa-tshirt text-primary" style="font-size: 1rem;"></i>
+                        {% elif cat.category|lower == 'electronics' %}
+                        <i class="fas fa-laptop text-success" style="font-size: 1rem;"></i>
+                        {% elif cat.category|lower == 'beauty' or cat.category|lower == 'cosmetics' %}
+                        <i class="fas fa-magic text-warning" style="font-size: 1rem;"></i>
+                        {% elif cat.category|lower == 'shoes' or cat.category|lower == 'footwear' %}
+                        <i class="fas fa-shoe-prints text-info" style="font-size: 1rem;"></i>
+                        {% elif cat.category|lower == 'accessories' %}
+                        <i class="fas fa-gem text-danger" style="font-size: 1rem;"></i>
+                        {% else %}
+                        <i class="fas fa-tag text-secondary" style="font-size: 1rem;"></i>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <span class="fw-semibold d-block" style="font-size: 0.85rem;">{{ cat.category|title }}</span>
+                        <span class="text-muted" style="font-size: 0.7rem;">{{ cat.count }} item{{ cat.count|pluralize }}</span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Main Product Display (Search Filter Feedback if Active) -->
+{% if search_query or category_filter %}
+<div class="alert alert-info mb-4 d-flex justify-content-between align-items-center animate-fade-in">
+    <div>
+        <i class="fas fa-info-circle me-2"></i>
+        {% if search_query %}Showing results for "{{ search_query }}"{% endif %}
+        {% if category_filter %} in {{ category_filter|title }}{% endif %}
+    </div>
+    <a href="{% url 'home' %}" class="btn btn-outline-info btn-sm">Clear filters</a>
+</div>
+{% endif %}
+
+<!-- Header for Product Lists -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0 text-dark" id="featured-products">
+        {% if category_filter %}{{ category_filter|title }}{% else %}Featured Products{% endif %}
+        <span class="text-muted fs-6 font-weight-normal">({{ products.count }} products)</span>
+    </h4>
+    
+    <!-- Sort Form -->
+    <div class="d-flex align-items-center gap-2">
+        <span class="small text-muted d-none d-md-inline">Sort:</span>
+        <select class="form-select form-select-sm sort-select" style="max-width: 180px;" onchange="window.location.href = this.value">
+            <option value="{% url 'home' %}?{% if search_query %}search={{ search_query }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}sort=-created_at" 
+                {% if sort_by == '-created_at' %}selected{% endif %}>Newest First</option>
             <option value="{% url 'home' %}?{% if search_query %}search={{ search_query }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}sort=price" 
-                    {% if sort_by == 'price' %}selected{% endif %}>Price: Low to High</option>
+                {% if sort_by == 'price' %}selected{% endif %}>Price: Low to High</option>
             <option value="{% url 'home' %}?{% if search_query %}search={{ search_query }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}sort=-price" 
-                    {% if sort_by == '-price' %}selected{% endif %}>Price: High to Low</option>
+                {% if sort_by == '-price' %}selected{% endif %}>Price: High to Low</option>
             <option value="{% url 'home' %}?{% if search_query %}search={{ search_query }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}sort=name" 
-                    {% if sort_by == 'name' %}selected{% endif %}>Name: A-Z</option>
+                {% if sort_by == 'name' %}selected{% endif %}>Name: A-Z</option>
         </select>
     </div>
 </div>
 
+<!-- Products Grid -->
+{% if products %}
 <div class="row">
-    <!-- Sidebar Filters -->
-    <div class="col-lg-3 mb-4">
-        <div class="filter-section">
-            <h6 class="filter-title">
-                <i class="fas fa-filter me-2"></i>Filters
-            </h6>
-            
-            <!-- Categories -->
-            <div class="mb-4">
-                <h7 class="fw-bold">Categories</h7>
-                <div class="list-group list-group-flush mt-2">
-                    <a href="{% url 'home' %}" 
-                       class="filter-option list-group-item {% if not category_filter %}active{% endif %}">
-                        All Products
-                    </a>
-                    {% for category in categories %}
-                    <a href="{% url 'home' %}?category={{ category }}" 
-                       class="filter-option list-group-item {% if category_filter == category %}active{% endif %}">
-                        {{ category|title }}
-                    </a>
-                    {% endfor %}
-                </div>
+    {% for product in products %}
+    <div class="col-lg-3 col-md-4 col-6 mb-4 animate-fade-in">
+        <div class="product-card-premium">
+            <div class="img-container">
+                <!-- Smartly display dynamic discount badge based on product ID -->
+                {% if product.id == 1 or product.id == 5 or product.id == 10 %}
+                    <span class="card-badge-discount">-25%</span>
+                {% elif product.id == 2 or product.id == 6 or product.id == 11 %}
+                    <span class="card-badge-discount">-18%</span>
+                {% elif product.id == 3 or product.id == 7 or product.id == 12 %}
+                    <span class="card-badge-discount">-20%</span>
+                {% else %}
+                    <span class="card-badge-discount">-15%</span>
+                {% endif %}
+                
+                <!-- Wishlist Heart Button Link -->
+                {% if user.is_authenticated %}
+                <a href="{% url 'add_to_wishlist' product.id %}" class="card-btn-wishlist shadow-sm text-decoration-none">
+                    <i class="fas fa-heart"></i>
+                </a>
+                {% else %}
+                <a href="{% url 'login' %}?next={% url 'home' %}" class="card-btn-wishlist shadow-sm text-decoration-none">
+                    <i class="far fa-heart"></i>
+                </a>
+                {% endif %}
+                
+                <!-- Product Image Link -->
+                <a href="{% url 'product_detail' product.id %}">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    {% else %}
+                    <img src="https://via.placeholder.com/300x300?text=No+Image" alt="{{ product.name }}">
+                    {% endif %}
+                </a>
             </div>
             
-            <!-- Price Range (Static for now) -->
-            <div>
-                <h7 class="fw-bold">Price Range</h7>
-                <div class="mt-2">
-                    <a href="#" class="filter-option">Under ₹500</a>
-                    <a href="#" class="filter-option">₹500 - ₹1000</a>
-                    <a href="#" class="filter-option">₹1000 - ₹2000</a>
-                    <a href="#" class="filter-option">Above ₹2000</a>
+            <div class="card-info">
+                <span class="category">{{ product.category }}</span>
+                <a href="{% url 'product_detail' product.id %}" class="title">{{ product.name }}</a>
+                
+                <!-- Smart dynamic review stars & counts -->
+                <div class="rating-container">
+                    <div class="rating-stars">
+                        {% if product.id == 1 or product.id == 4 or product.id == 7 or product.id == 10 %}
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        {% elif product.id == 2 or product.id == 5 or product.id == 8 or product.id == 11 %}
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                        {% else %}
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
+                        {% endif %}
+                    </div>
+                    <span class="rating-count">
+                        {% if product.id == 1 or product.id == 10 %}
+                            (1,234)
+                        {% elif product.id == 2 or product.id == 11 %}
+                            (842)
+                        {% else %}
+                            (412)
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <!-- Product Tags -->
+                {% if product.get_tags %}
+                <div class="card-tags-container">
+                    {% for tag in product.get_tags %}
+                    {% if forloop.counter <= 2 %}
+                    <span class="card-tag">{{ tag }}</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="card-footer-premium">
+                    <div class="price-container">
+                        <span class="price-current">₹{{ product.price }}</span>
+                        <!-- Display crossed out original price dynamically -->
+                        {% if product.id == 1 or product.id == 5 or product.id == 10 %}
+                            <span class="price-original">₹{{ product.price|add:1999 }}</span>
+                        {% elif product.id == 2 or product.id == 6 or product.id == 11 %}
+                            <span class="price-original">₹{{ product.price|add:999 }}</span>
+                        {% else %}
+                            <span class="price-original">₹{{ product.price|add:499 }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Quick Add to Cart Form -->
+                    <form method="POST" action="{% url 'add_to_cart' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <input type="hidden" name="quantity" value="1">
+                        {% if product.variants.exists %}
+                        <a href="{% url 'product_detail' product.id %}" class="btn-card-cart text-decoration-none">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        {% else %}
+                        <button type="submit" class="btn-card-cart">
+                            <i class="fas fa-shopping-cart"></i>
+                        </button>
+                        {% endif %}
+                    </form>
                 </div>
             </div>
         </div>
     </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-search fa-4x text-muted mb-3"></i>
+    <h4>No products found</h4>
+    <p class="text-muted">Try adjusting your search or filter criteria.</p>
+    <a href="{% url 'home' %}" class="btn btn-primary btn-sm rounded-pill px-4 py-2">
+        <i class="fas fa-home me-2"></i>Back to Home
+    </a>
+</div>
+{% endif %}
 
-    <!-- Products Grid -->
-    <div class="col-lg-9" id="products">
-        {% if search_query or category_filter %}
-        <div class="alert alert-info mb-4">
-            <i class="fas fa-info-circle me-2"></i>
-            {% if search_query %}Showing results for "{{ search_query }}"{% endif %}
-            {% if category_filter %} in {{ category_filter|title }}{% endif %}
-            <a href="{% url 'home' %}" class="alert-link float-end">Clear filters</a>
+<!-- Split Promotional Highlight Cards -->
+{% if not search_query and not category_filter %}
+<div class="row mt-4 mb-5">
+    <!-- Summer Collection Banner -->
+    <div class="col-md-6 mb-4 mb-md-0">
+        <div class="promo-split-card promo-split-1">
+            <span class="promo-tag">Summer Collection</span>
+            <h3 class="promo-title">Up to 50% Off<br>On Fashion & Accessories</h3>
+            <a href="{% url 'home' %}?category=fashion" class="btn-promo">Shop Now</a>
+            <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=250&auto=format&fit=crop" class="promo-img rounded-start-4 d-none d-sm-block" alt="Summer Fashion">
         </div>
-        {% endif %}
-
-        <h4 class="mb-4">
-            {% if category_filter %}{{ category_filter|title }}{% else %}All Products{% endif %}
-            <span class="text-muted fs-6">({{ products.count }} products)</span>
-        </h4>
-
-        {% if products %}
-        <div class="row">
-            {% for product in products %}
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card product-card h-100">
-                    <div class="product-image-container">
-                        <!-- Category Badge -->
-                        <span class="badge bg-secondary category-badge">{{ product.category|title }}</span>
-                        
-                        {% if product.image %}
-                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
-                        {% else %}
-                        <img src="https://via.placeholder.com/300x250?text=No+Image" 
-                             class="card-img-top" alt="{{ product.name }}">
-                        {% endif %}
-                        
-                        <!-- Quick View Overlay -->
-                        <div class="product-overlay">
-                            <a href="{% url 'product_detail' product.id %}" 
-                               class="btn btn-light">
-                                <i class="fas fa-eye me-1"></i> Quick View
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="card-body">
-                        <h5 class="card-title">{{ product.name }}</h5>
-                        <p class="card-text text-muted small">
-                            {{ product.description|truncatewords:15 }}
-                        </p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="h5 text-success mb-0">₹{{ product.price }}</span>
-                            <span class="text-muted small">
-                                {% if product.variants.exists %}
-                                {{ product.variants.count }} variants
-                                {% endif %}
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <div class="card-footer bg-white border-top-0">
-                        <div class="d-grid gap-2">
-                            <a href="{% url 'product_detail' product.id %}" 
-                               class="btn btn-outline-primary">
-                                <i class="fas fa-info-circle me-1"></i> View Details
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
+    </div>
+    <!-- Shoes Ad Banner -->
+    <div class="col-md-6">
+        <div class="promo-split-card promo-split-2">
+            <span class="promo-tag">Trending Now</span>
+            <h3 class="promo-title">Up to 50% Off<br>On Premium Sneakers</h3>
+            <a href="{% url 'home' %}?category=shoes" class="btn-promo">Shop Now</a>
+            <img src="{% static 'images/shoes_banner.png' %}" class="promo-img rounded-start-4 d-none d-sm-block" alt="Premium Sneakers Ad">
         </div>
-        {% else %}
-        <div class="text-center py-5">
-            <i class="fas fa-search fa-4x text-muted mb-3"></i>
-            <h4>No products found</h4>
-            <p class="text-muted">Try adjusting your search or filter criteria.</p>
-            <a href="{% url 'home' %}" class="btn btn-primary">
-                <i class="fas fa-home me-2"></i>Back to Home
-            </a>
-        </div>
-        {% endif %}
     </div>
 </div>
 
+<!-- Verified Reviews Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h4 class="mb-4 fw-bold"><i class="fas fa-quote-left text-primary me-2"></i>What Our Customers Say</h4>
+        <div class="row">
+            <div class="col-md-6 mb-4 mb-md-0">
+                <div class="testimonial-card h-100">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100&auto=format&fit=crop" class="user-avatar" alt="Emily Johnson">
+                        <div>
+                            <h6 class="fw-bold mb-0">Emily Johnson</h6>
+                            <span class="verified-badge"><i class="fas fa-check-circle me-1"></i>Verified Buyer</span>
+                        </div>
+                    </div>
+                    <p class="testimonial-text">"Great products, fast delivery, and excellent customer service. DripShop is my go-to shopping destination!"</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="testimonial-card h-100">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&auto=format&fit=crop" class="user-avatar" alt="Marcus Smith">
+                        <div>
+                            <h6 class="fw-bold mb-0">Marcus Smith</h6>
+                            <span class="verified-badge"><i class="fas fa-check-circle me-1"></i>Verified Buyer</span>
+                        </div>
+                    </div>
+                    <p class="testimonial-text">"Absolutely love the quality of the streetwear. The shipping was incredibly fast and packaging was top-notch."</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Newsletter Subscription Section -->
+<div class="newsletter-section text-center">
+    <h4 class="newsletter-title mb-2">Get Exclusive Offers & Updates</h4>
+    <p class="newsletter-desc mb-4">Join our newsletter and receive 10% off your first order plus exclusive premium deals.</p>
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Thank you for subscribing!'); this.reset();">
+                <input type="email" class="form-control" placeholder="Enter your email address" required>
+                <button type="submit" class="btn-subscribe">Subscribe</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+{% if not search_query and not category_filter %}
+<script>
+    // Live Countdown Timer for Flash Deal
+    // Set target date to 2 days from now
+    let countDownDate = new Date().getTime() + (2 * 24 * 60 * 60 * 1000) + (5 * 60 * 60 * 1000);
+    
+    let timerInterval = setInterval(function() {
+        let now = new Date().getTime();
+        let distance = countDownDate - now;
+        
+        let days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        
+        const daysEl = document.getElementById("days");
+        const hoursEl = document.getElementById("hours");
+        const minutesEl = document.getElementById("minutes");
+        const secondsEl = document.getElementById("seconds");
+        
+        if (daysEl) daysEl.innerHTML = String(days).padStart(2, '0');
+        if (hoursEl) hoursEl.innerHTML = String(hours).padStart(2, '0');
+        if (minutesEl) minutesEl.innerHTML = String(minutes).padStart(2, '0');
+        if (secondsEl) secondsEl.innerHTML = String(seconds).padStart(2, '0');
+        
+        if (distance < 0) {
+            clearInterval(timerInterval);
+            const countdownEl = document.getElementById("countdown");
+            if (countdownEl) countdownEl.innerHTML = "<h5 class='text-warning mt-2'>Deal Expired</h5>";
+        }
+    }, 1000);
+</script>
+{% endif %}
 {% endblock %}

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation - DripShop</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+        .wrapper {
+            width: 100%;
+            background-color: #f8fafc;
+            padding: 40px 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e2e8f0;
+        }
+        .header {
+            background-color: #0f172a;
+            padding: 30px 40px;
+            text-align: center;
+        }
+        .header h1 {
+            color: #ffffff;
+            font-size: 24px;
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header p {
+            color: #94a3b8;
+            font-size: 14px;
+            margin: 5px 0 0 0;
+        }
+        .content {
+            padding: 40px;
+        }
+        .greeting {
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 0;
+            color: #0f172a;
+        }
+        .intro-text {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #64748b;
+            margin-bottom: 30px;
+        }
+        .order-meta-card {
+            background-color: #f1f5f9;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .order-meta-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .order-meta-row:last-child {
+            margin-bottom: 0;
+        }
+        .order-meta-label {
+            color: #64748b;
+            font-weight: 500;
+        }
+        .order-meta-value {
+            color: #0f172a;
+            font-weight: 600;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .items-table th {
+            text-align: left;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+            color: #475569;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .items-table td {
+            padding: 16px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+        .product-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .product-name {
+            font-weight: 600;
+            color: #0f172a;
+        }
+        .product-variant {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+        .price-col {
+            font-weight: 500;
+            color: #0f172a;
+        }
+        .qty-col {
+            color: #64748b;
+            text-align: center;
+        }
+        .total-col {
+            font-weight: 600;
+            color: #0f172a;
+            text-align: right;
+        }
+        .totals-section {
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        .totals-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .totals-label {
+            color: #64748b;
+            min-width: 120px;
+            text-align: right;
+            padding-right: 20px;
+        }
+        .totals-value {
+            color: #0f172a;
+            font-weight: 600;
+            min-width: 100px;
+            text-align: right;
+        }
+        .totals-grand {
+            font-size: 18px;
+            border-top: 2px dashed #e2e8f0;
+            padding-top: 12px;
+            margin-top: 8px;
+        }
+        .totals-grand .totals-label {
+            color: #0f172a;
+            font-weight: 700;
+        }
+        .totals-grand .totals-value {
+            color: #0d6efd;
+            font-weight: 700;
+        }
+        .address-section {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 30px;
+            margin-bottom: 10px;
+        }
+        .address-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 10px;
+        }
+        .address-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #64748b;
+            margin: 0;
+        }
+        .footer {
+            background-color: #f1f5f9;
+            padding: 30px 40px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+        .footer p {
+            font-size: 13px;
+            color: #64748b;
+            margin: 0 0 10px 0;
+            line-height: 1.5;
+        }
+        .footer p:last-child {
+            margin-bottom: 0;
+        }
+        .footer a {
+            color: #0d6efd;
+            text-decoration: none;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🛍️ DripShop</h1>
+            <p>Your order confirmation is here!</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <h2 class="greeting">Hi {{ order.user.username|title }},</h2>
+            <p class="intro-text">
+                Thank you for your purchase! We've received your order and are currently preparing it for shipment. You will receive another notification once your tracking details are available.
+            </p>
+
+            <!-- Order Meta Information -->
+            <div class="order-meta-card">
+                <div class="order-meta-row">
+                    <span class="order-meta-label">Order Number</span>
+                    <span class="order-meta-value">{{ order.order_id }}</span>
+                </div>
+                <div class="order-meta-row">
+                    <span class="order-meta-label">Order Date</span>
+                    <span class="order-meta-value">{{ order.created_at|date:"d M Y, h:i A" }}</span>
+                </div>
+                <div class="order-meta-row">
+                    <span class="order-meta-label">Payment Method</span>
+                    <span class="order-meta-value">
+                        {% if order.payment_method == 'cod' %}
+                            Cash on Delivery (COD)
+                        {% elif order.payment_method == 'razorpay' %}
+                            Razorpay Online
+                        {% elif order.payment_method == 'stripe' %}
+                            Stripe Credit/Debit Card
+                        {% else %}
+                            {{ order.payment_method|upper }}
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="order-meta-row">
+                    <span class="order-meta-label">Payment Status</span>
+                    <span class="order-meta-value" style="color: {% if order.payment_status == 'completed' %}#10b981{% else %}#f59e0b{% endif %};">
+                        {{ order.payment_status|title }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Items Details -->
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th style="width: 55%;">Product Name</th>
+                        <th style="width: 15%; text-align: right;">Price</th>
+                        <th style="width: 10%; text-align: center;">Qty</th>
+                        <th style="width: 20%; text-align: right;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items.all %}
+                    <tr>
+                        <td>
+                            <div class="product-info">
+                                <span class="product-name">{{ item.product.name }}</span>
+                                {% if item.variant %}
+                                <span class="product-variant">
+                                    Size: {{ item.variant.size|default:"N/A" }} | Color: {{ item.variant.color|default:"N/A" }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="price-col" style="text-align: right;">₹{{ item.price }}</td>
+                        <td class="qty-col">{{ item.quantity }}</td>
+                        <td class="total-col">₹{{ item.get_total }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Totals Section -->
+            <div class="totals-section">
+                <div class="totals-row">
+                    <span class="totals-label">Subtotal</span>
+                    <span class="totals-value">₹{{ order.total_price }}</span>
+                </div>
+                <div class="totals-row">
+                    <span class="totals-label">Shipping</span>
+                    <span class="totals-value">Free</span>
+                </div>
+                <div class="totals-row totals-grand">
+                    <span class="totals-label">Grand Total</span>
+                    <span class="totals-value">₹{{ order.total_price }}</span>
+                </div>
+            </div>
+
+            <!-- Shipping Address Details -->
+            <div class="address-section">
+                <h3 class="address-title">Shipping Address</h3>
+                <p class="address-text">
+                    <strong>{{ order.user.get_full_name|default:order.user.username }}</strong><br>
+                    {{ order.shipping_address }}<br>
+                    {% if order.phone %}<strong>Phone:</strong> {{ order.phone }}{% endif %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>If you have any questions about your order, please do not hesitate to contact us.</p>
+            <p>
+                Email: <a href="mailto:support@dripshop.com">support@dripshop.com</a> | 
+                Phone: <a href="tel:+918709167289">+91 87091 67289</a>
+            </p>
+            <p>&copy; {% now "Y" %} DripShop. All rights reserved.</p>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

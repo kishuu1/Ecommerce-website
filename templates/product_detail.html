@@ -80,6 +80,29 @@
         transform: translateY(-5px);
         box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     }
+    .product-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 1.25rem;
+    }
+    .product-tag {
+        display: inline-block;
+        background: #fff8e1;
+        color: #5d4037;
+        border: 1.5px solid #ffe082;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        transition: all 0.2s ease;
+    }
+    .product-tag:hover {
+        background: #ffe082;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(255,224,130,0.4);
+    }
 </style>
 {% endblock %}
 
@@ -130,22 +153,25 @@
         <!-- Category & Stock -->
         <div class="d-flex align-items-center gap-3 mb-3">
             <span class="badge bg-secondary">{{ product.category|title }}</span>
-            {% if selected_variant and selected_variant.stock > 0 %}
-            <span class="badge bg-success stock-badge">
-                <i class="fas fa-check-circle me-1"></i>In Stock ({{ selected_variant.stock }})
+            <span class="badge bg-danger stock-badge" {% if is_in_stock %}style="display: none;"{% endif %}>
+                <i class="fas fa-times-circle me-1"></i>Sold Out
             </span>
-            {% else %}
-            <span class="badge bg-danger stock-badge">
-                <i class="fas fa-times-circle me-1"></i>Out of Stock
-            </span>
-            {% endif %}
         </div>
 
         <!-- Price -->
         <h3 class="text-success mb-4">₹{{ product.price }}</h3>
 
         <!-- Description -->
-        <p class="text-muted mb-4">{{ product.description }}</p>
+        <p class="text-muted mb-3">{{ product.description }}</p>
+
+        <!-- Product Feature Tags -->
+        {% if product.get_tags %}
+        <div class="product-tags">
+            {% for tag in product.get_tags %}
+            <span class="product-tag">{{ tag }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
 
         <!-- Add to Cart Form -->
         <form method="POST" action="{% url 'add_to_cart' %}" id="addToCartForm">
@@ -307,6 +333,16 @@
         if ((needsSize && !selectedSize) || (needsColor && !selectedColor)) {
             variantInput.value = "";
             addToCartBtn.setAttribute('disabled', 'true');
+            const stockBadge = document.querySelector('.stock-badge');
+            if (stockBadge) {
+                {% if is_in_stock %}
+                stockBadge.style.display = "none";
+                {% else %}
+                stockBadge.className = "badge bg-danger stock-badge";
+                stockBadge.innerHTML = `<i class="fas fa-times-circle me-1"></i>Sold Out`;
+                stockBadge.style.display = "";
+                {% endif %}
+            }
             return;
         }
         
@@ -331,18 +367,16 @@
             
             const stockBadge = document.querySelector('.stock-badge');
             if (stockBadge) {
-                stockBadge.className = "badge bg-success stock-badge";
-                stockBadge.innerHTML = `<i class="fas fa-check-circle me-1"></i>In Stock (${foundVariant.stock})`;
+                stockBadge.style.display = "none";
             }
         } else {
             variantInput.value = "";
             addToCartBtn.setAttribute('disabled', 'true');
-            if (foundVariant && foundVariant.stock === 0) {
-                const stockBadge = document.querySelector('.stock-badge');
-                if (stockBadge) {
-                    stockBadge.className = "badge bg-danger stock-badge";
-                    stockBadge.innerHTML = `<i class="fas fa-times-circle me-1"></i>Out of Stock`;
-                }
+            const stockBadge = document.querySelector('.stock-badge');
+            if (stockBadge) {
+                stockBadge.className = "badge bg-danger stock-badge";
+                stockBadge.innerHTML = `<i class="fas fa-times-circle me-1"></i>Sold Out`;
+                stockBadge.style.display = "";
             }
         }
     }

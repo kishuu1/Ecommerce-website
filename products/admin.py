@@ -9,7 +9,7 @@ class ProductVariantInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'price', 'category')
+    list_display = ('name', 'price', 'category', 'tags')
     inlines = [ProductVariantInline]
 
 

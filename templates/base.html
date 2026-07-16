@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}DripShop - E-Commerce{% endblock %}</title>
+    <title>{% block title %}DripShop - Premium E-Commerce{% endblock %}</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -12,149 +12,134 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <!-- Custom CSS with cache-busting -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v={% now 'U' %}">
     
     {% block extra_css %}{% endblock %}
 </head>
 <body>
 
+<!-- Mega Promo Announcement Ticker -->
+<div class="promo-ticker">
+    <i class="fas fa-bullhorn me-2"></i>Mega Summer Sale is Live! Get Up to 60% OFF <a href="{% url 'home' %}?sort=-price" class="ms-1"><strong>Shop Now &rsaquo;</strong></a>
+</div>
+
 <!-- Navigation Bar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
-    <div class="container">
+<nav class="navbar navbar-expand-lg navbar-clean sticky-top">
+    <div class="container d-flex justify-content-between align-items-center">
         <!-- Brand Logo -->
-        <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
-            <i class="fas fa-shopping-bag me-2"></i>
-            <span>DripShop</span>
+        <a class="navbar-brand-clean text-decoration-none" href="{% url 'home' %}">
+            <i class="fas fa-shopping-bag"></i>
+            <div>
+                DripShop
+                <span>Shop Smart, Live Better</span>
+            </div>
         </a>
 
-        <!-- Mobile Toggle -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
-                data-bs-target="#navbarNav" aria-controls="navbarNav" 
-                aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <!-- Search Bar -->
-            <form method="GET" action="{% url 'home' %}" class="d-flex mx-lg-4 my-2 my-lg-0 flex-grow-1">
-                <div class="input-group">
-                    <input type="text" name="search" class="form-control" 
-                           placeholder="Search products..." 
-                           value="{{ request.GET.search|default:'' }}">
-                    <button class="btn btn-outline-light" type="submit">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
+        <!-- Centered Search Bar -->
+        <div class="d-none d-lg-block flex-grow-1 mx-5">
+            <form method="GET" action="{% url 'home' %}" class="search-container mx-auto">
+                {% if category_filter %}
+                <input type="hidden" name="category" value="{{ category_filter }}">
+                {% endif %}
+                <input type="text" name="search" class="form-control" 
+                       placeholder="Search for products, brands and more..." 
+                       value="{{ search_query|default:'' }}">
+                <button class="btn-search" type="submit">
+                    <i class="fas fa-search"></i>
+                </button>
             </form>
+        </div>
 
-            <!-- Nav Items -->
-            <ul class="navbar-nav align-items-lg-center">
-                <!-- Home -->
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'home' %}">
-                        <i class="fas fa-home me-1 d-lg-none"></i>Home
-                    </a>
-                </li>
+        <!-- Navigation Action Buttons -->
+        <div class="d-flex align-items-center gap-2 gap-md-3">
+            <!-- Search Toggle for mobile/tablet -->
+            <button class="nav-icon-btn d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#mobileSearchCollapse" aria-expanded="false" aria-controls="mobileSearchCollapse">
+                <i class="fas fa-search"></i>
+            </button>
 
-                <!-- Cart with Badge -->
-                <li class="nav-item">
-                    <a class="nav-link position-relative" href="{% url 'cart' %}">
-                        <i class="fas fa-shopping-cart me-1"></i>
-                        <span class="d-none d-lg-inline">Cart</span>
-                        {% if cart_count > 0 %}
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            {{ cart_count }}
-                        </span>
-                        {% endif %}
-                    </a>
-                </li>
+            <!-- Wishlist -->
+            <a class="nav-icon-btn" href="{% url 'wishlist' %}" title="Wishlist">
+                <i class="far fa-heart"></i>
+            </a>
 
-                <!-- Wishlist -->
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'wishlist' %}">
-                        <i class="fas fa-heart me-1"></i>
-                        <span class="d-lg-none">Wishlist</span>
-                    </a>
-                </li>
-
-                <!-- Orders -->
-                {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'order_history' %}">
-                        <i class="fas fa-box me-1"></i>
-                        <span class="d-lg-none">Orders</span>
-                    </a>
-                </li>
+            <!-- Cart -->
+            <a class="nav-icon-btn" href="{% url 'cart' %}" title="Shopping Cart">
+                <i class="fas fa-shopping-cart"></i>
+                {% if cart_count > 0 %}
+                <span class="badge-count">{{ cart_count }}</span>
                 {% endif %}
+            </a>
 
-                <!-- User Dropdown -->
-                {% if user.is_authenticated %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" 
-                       data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-user-circle me-1"></i>
-                        {{ user.username|title }}
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <a class="dropdown-item" href="{% url 'profile' %}">
-                                <i class="fas fa-user me-2"></i>My Profile
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="{% url 'order_history' %}">
-                                <i class="fas fa-box me-2"></i>My Orders
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="{% url 'wishlist' %}">
-                                <i class="fas fa-heart me-2"></i>My Wishlist
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item text-danger" href="{% url 'logout' %}">
-                                <i class="fas fa-sign-out-alt me-2"></i>Logout
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                {% else %}
-                <li class="nav-item">
-                    <a class="nav-link btn btn-outline-light btn-sm px-3 ms-lg-2" 
-                       href="{% url 'login' %}">
-                        <i class="fas fa-sign-in-alt me-1"></i>Login
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link btn btn-primary btn-sm px-3 ms-lg-2" 
-                       href="{% url 'register' %}">
-                        <i class="fas fa-user-plus me-1"></i>Register
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
+            <!-- User Authentication & Dropdown -->
+            {% if user.is_authenticated %}
+            <div class="dropdown">
+                <button class="nav-icon-btn dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="far fa-user"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" aria-labelledby="userMenuButton">
+                    <li><span class="dropdown-item-text fw-semibold text-muted small">Hello, @{{ user.username }}</span></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center" href="{% url 'profile' %}">
+                            <i class="fas fa-user-circle me-2 text-muted"></i>My Profile
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center" href="{% url 'order_history' %}">
+                            <i class="fas fa-box me-2 text-muted"></i>My Orders
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center" href="{% url 'wishlist' %}">
+                            <i class="fas fa-heart me-2 text-muted"></i>My Wishlist
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item text-danger d-flex align-items-center" href="{% url 'logout' %}">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            {% else %}
+            <a class="nav-icon-btn" href="{% url 'login' %}" title="Login">
+                <i class="far fa-user"></i>
+            </a>
+            {% endif %}
         </div>
     </div>
 </nav>
 
+<!-- Collapsible Mobile Search Bar -->
+<div class="collapse d-lg-none bg-white border-bottom py-3 px-3" id="mobileSearchCollapse">
+    <form method="GET" action="{% url 'home' %}" class="search-container mx-auto">
+        {% if category_filter %}
+        <input type="hidden" name="category" value="{{ category_filter }}">
+        {% endif %}
+        <input type="text" name="search" class="form-control" 
+               placeholder="Search for products, brands..." 
+               value="{{ search_query|default:'' }}">
+        <button class="btn-search" type="submit">
+            <i class="fas fa-search"></i>
+        </button>
+    </form>
+</div>
+
 <!-- Messages/Alerts -->
 {% if messages %}
-<div class="container mt-3">
+<div class="container mt-3 animate-fade-in">
     {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm" role="alert">
         {% if message.tags == 'success' %}
-        <i class="fas fa-check-circle me-2"></i>
+        <i class="fas fa-check-circle me-2 text-success"></i>
         {% elif message.tags == 'error' %}
-        <i class="fas fa-exclamation-circle me-2"></i>
+        <i class="fas fa-exclamation-circle me-2 text-danger"></i>
         {% elif message.tags == 'warning' %}
-        <i class="fas fa-exclamation-triangle me-2"></i>
+        <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
         {% else %}
-        <i class="fas fa-info-circle me-2"></i>
+        <i class="fas fa-info-circle me-2 text-info"></i>
         {% endif %}
         {{ message }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -163,50 +148,88 @@
 </div>
 {% endif %}
 
-<!-- Main Content -->
+<!-- Main Content Area -->
 <main class="py-4">
     <div class="container">
         {% block content %}{% endblock %}
     </div>
 </main>
 
-<!-- Footer -->
-<footer class="py-4 mt-auto">
+<!-- Footer Redesign -->
+<footer class="footer-clean">
     <div class="container">
         <div class="row">
-            <div class="col-md-4 mb-3 mb-md-0">
-                <h5>DripShop</h5>
-
-                <p class="text-muted small">Your one-stop drip shop for premium streetwear. Quality products at best prices.</p>
+            <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
+                <h5 class="navbar-brand-clean"><i class="fas fa-shopping-bag"></i> DripShop</h5>
+                <p class="text-muted small mt-3 pr-lg-4">Your one-stop premium store for modern streetwear, quality lifestyle accessories, and electronics. Curated style at unmatched prices.</p>
+                <div class="social-links mt-4">
+                    <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-btn"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-btn"><i class="fab fa-pinterest"></i></a>
+                </div>
             </div>
-            <div class="col-md-4 mb-3 mb-md-0">
+            <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
                 <h6>Quick Links</h6>
                 <ul class="list-unstyled">
-                    <li><a href="{% url 'home' %}" class="text-muted text-decoration-none">Home</a></li>
-                    <li><a href="{% url 'cart' %}" class="text-muted text-decoration-none">Cart</a></li>
-                    <li><a href="{% url 'wishlist' %}" class="text-muted text-decoration-none">Wishlist</a></li>
+                    <li class="mb-2"><a href="{% url 'home' %}">Home Catalog</a></li>
+                    <li class="mb-2"><a href="{% url 'cart' %}">My Shopping Cart</a></li>
+                    <li class="mb-2"><a href="{% url 'wishlist' %}">My Wishlist</a></li>
                     {% if user.is_authenticated %}
-                    <li><a href="{% url 'order_history' %}" class="text-muted text-decoration-none">Orders</a></li>
+                    <li class="mb-2"><a href="{% url 'order_history' %}">Order Tracking</a></li>
                     {% endif %}
                 </ul>
             </div>
-            <div class="col-md-4">
+            <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                <h6>Customer Support</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="#">Terms & Conditions</a></li>
+                    <li class="mb-2"><a href="#">Privacy Policy</a></li>
+                    <li class="mb-2"><a href="#">Shipping & Returns</a></li>
+                    <li class="mb-2"><a href="#">FAQs</a></li>
+                </ul>
+            </div>
+            <div class="col-lg-2 col-md-6">
                 <h6>Contact Us</h6>
-                <p class="text-muted small mb-1">
-                    <i class="fas fa-envelope me-2"></i>support@dripshop.com
+                <p class="text-muted small mb-2">
+                    <i class="fas fa-envelope me-2 text-primary"></i>support@dripshop.com
                 </p>
                 <p class="text-muted small mb-0">
-                    <i class="fas fa-phone me-2"></i>8709167289
+                    <i class="fas fa-phone me-2 text-primary"></i>+91 87091 67289
                 </p>
             </div>
         </div>
-        <hr class="my-3">
-        <div class="text-center text-muted small">
+        <hr class="my-4" style="border-color: var(--border-light);">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center text-muted small">
             <p class="mb-0">&copy; {% now "Y" %} DripShop. All rights reserved.</p>
-
+            <p class="mb-0">Designed for visual excellence and fast performance.</p>
         </div>
     </div>
 </footer>
+
+<!-- Mobile Bottom Navigation Bar -->
+<div class="mobile-bottom-nav">
+    <a href="{% url 'home' %}" class="mobile-bottom-nav-item {% if request.resolver_match.url_name == 'home' or request.resolver_match.url_name == 'products' %}active{% endif %}">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+    </a>
+    <a href="{% url 'home' %}?category=fashion" class="mobile-bottom-nav-item">
+        <i class="fas fa-tshirt"></i>
+        <span>Fashion</span>
+    </a>
+    <a href="{% url 'wishlist' %}" class="mobile-bottom-nav-item {% if request.resolver_match.url_name == 'wishlist' %}active{% endif %}">
+        <i class="fas fa-heart"></i>
+        <span>Wishlist</span>
+    </a>
+    <a href="{% url 'cart' %}" class="mobile-bottom-nav-item {% if request.resolver_match.url_name == 'cart' %}active{% endif %}">
+        <i class="fas fa-shopping-cart"></i>
+        <span>Cart</span>
+    </a>
+    <a href="{% url 'profile' %}" class="mobile-bottom-nav-item {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+        <i class="fas fa-user"></i>
+        <span>Account</span>
+    </a>
+</div>
 
 <!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

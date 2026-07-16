@@ -478,7 +478,7 @@
     // Config properties for Razorpay checkout integration
     const options = {
         "key": "{{ razorpay_key }}",
-        "amount": {{ razorpay_order.amount }},
+        "amount": "{{ razorpay_order.amount }}",
         "currency": "INR",
         "name": "DripShop",
         "description": "Order {{ order.order_id }}",

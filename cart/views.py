@@ -137,7 +137,10 @@ def add_to_wishlist(request, product_id):
         messages.info(request, f"{product.name} is already in your wishlist!")
 
     # Redirect back to the page user came from
-    return redirect(request.META.get('HTTP_REFERER', 'product_detail', id=product_id))
+    referer = request.META.get('HTTP_REFERER')
+    if referer:
+        return redirect(referer)
+    return redirect('product_detail', id=product_id)
 
 
 @login_required

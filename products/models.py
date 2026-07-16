@@ -6,8 +6,16 @@ class Product(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     category = models.CharField(max_length=100)
+    tags = models.CharField(max_length=500, blank=True, default='',
+                            help_text='Comma-separated feature tags, e.g. "6-in-1 Combo, Longwear Makeup"')
     image = models.ImageField(upload_to="products/", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def get_tags(self):
+        """Return tags as a list, stripping whitespace."""
+        if self.tags:
+            return [t.strip() for t in self.tags.split(',') if t.strip()]
+        return []
 
     def __str__(self):
         return self.name
